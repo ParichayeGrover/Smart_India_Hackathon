@@ -1,7 +1,12 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+import pool from "./db.js";
+import authRoutes from "./routes/auth.js";
+import adminRoutes from "./routes/admin.js";
+import workerRoutes from "./routes/worker.js";
+import publicRoutes from "./routes/public.js";
+import sharedRoutes from "./routes/shared.js";
 
 dotenv.config();
 const app = express();
@@ -10,18 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
+// Test DB connection
+pool.connect()
+  .then(() => console.log("✅ PostgreSQL Connected"))
   .catch((err) => console.log("❌ DB Error:", err));
 
 // Routes
-import patientRoutes from "./routes/patients.js";
-import readingRoutes from "./routes/readings.js";
-
-app.use("/api/patients", patientRoutes);
-app.use("/api/readings", readingRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/worker", workerRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api", sharedRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

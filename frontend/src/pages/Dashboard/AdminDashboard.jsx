@@ -1,24 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Layout/Navbar";
 import Sidebar from "../../components/Layout/Sidebar";
 
 export default function AdminDashboard() {
-  const [contaminationData, setContaminationData] = useState([
-    { area: "Sector 21", status: "Contaminated", level: "High", lastUpdated: "19 Sep 2025, 10:30 AM", source: "Groundwater", worker: "" },
-    { area: "Sector 15", status: "Safe", level: "Low", lastUpdated: "19 Sep 2025, 9:15 AM", source: "Municipal Supply", worker: "" },
-    { area: "Village Rampur", status: "Contaminated", level: "Moderate", lastUpdated: "19 Sep 2025, 8:45 AM", source: "Hand Pumps", worker: "" },
-    { area: "Sector 30", status: "Contaminated", level: "Severe", lastUpdated: "19 Sep 2025, 11:00 AM", source: "Pipeline Leak", worker: "" },
-    { area: "Sector 42", status: "Safe", level: "Low", lastUpdated: "19 Sep 2025, 7:30 AM", source: "Overhead Tank", worker: "" },
-    { area: "Village Dharampur", status: "Contaminated", level: "High", lastUpdated: "19 Sep 2025, 6:50 AM", source: "Open Wells", worker: "" },
-  ]);
 
-  const workers = ["worker1", "worker2", "worker3"];
+  const [contaminationData, setContaminationData] = useState([]);
+  const [workers, setWorkers] = useState([]);
+  // Optionally, you can store the selected village if needed
+  // const [selectedVillage, setSelectedVillage] = useState(null);
+
+  useEffect(() => {
+    // Fetch contamination data (e.g., water bodies + status) for admin's village
+    fetch("/api/admin/water-bodies")
+      .then((res) => res.json())
+      .then((data) => setContaminationData(data))
+      .catch(() => setContaminationData([]));
+
+    // Fetch workers for admin's village
+    fetch("/api/admin/workers")
+      .then((res) => res.json())
+      .then((data) => setWorkers(data))
+      .catch(() => setWorkers([]));
+  }, []);
 
   // Assign worker to area
   const assignWorker = (index, worker) => {
-    const newData = [...contaminationData];
-    newData[index].worker = worker;
-    setContaminationData(newData);
+    const waterBody = contaminationData[index];
+    // Call backend to assign worker to water body
+    fetch("/api/admin/assign-worker", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ worker_id: worker, water_body_id: waterBody.id }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        // Optionally update UI after assignment
+        const newData = [...contaminationData];
+        newData[index].worker = worker;
+        setContaminationData(newData);
+      });
   };
 
   return (
@@ -33,28 +53,30 @@ export default function AdminDashboard() {
               key={index}
               className="bg-slate-800 p-6 rounded-2xl shadow-xl hover:scale-105 transition-transform"
             >
-              <h2 className="text-xl font-semibold mb-3">{item.area}</h2>
+              <h2 className="text-xl font-semibold mb-3">{item.name || item.area}</h2>
               <p className={`text-lg font-bold mb-2 ${item.status === "Contaminated" ? "text-red-400" : "text-green-400"}`}>
-                {item.status}
+                {item.status || "Unknown"}
               </p>
-              <p className="text-slate-300 text-sm">Level: <span className="font-medium">{item.level}</span></p>
-              <p className="text-slate-400 text-xs mt-1">Source: {item.source}</p>
-              <p className="text-slate-500 text-xs mt-1">Last Updated: {item.lastUpdated}</p>
+              <p className="text-slate-300 text-sm">Level: <span className="font-medium">{item.level || "-"}</span></p>
+              <p className="text-slate-400 text-xs mt-1">Source: {item.type || item.source}</p>
+              <p className="text-slate-500 text-xs mt-1">Last Updated: {item.lastUpdated || "-"}</p>
 
               {/* Assign Worker */}
               <div className="mt-3">
                 <label className="text-slate-300 text-sm">Assign Worker:</label>
                 <select
                   className="w-full mt-1 p-2 rounded-lg bg-slate-700 text-slate-100 focus:outline-none"
-                  value={item.worker}
+                  value={item.worker || ""}
                   onChange={(e) => assignWorker(index, e.target.value)}
                 >
                   <option value="">Select</option>
                   {workers.map((w, idx) => (
-                    <option key={idx} value={w}>{w}</option>
+                    <option key={w.id || idx} value={w.id || w}>
+                      {w.name || w}
+                    </option>
                   ))}
                 </select>
-                {item.worker && <p className="text-slate-300 mt-1 text-sm">Assigned to: {item.worker}</p>}
+                {item.worker && <p className="text-slate-300 mt-1 text-sm">Assigned to: {workers.find(w => w.id === item.worker)?.name || item.worker}</p>}
               </div>
             </div>
           ))}

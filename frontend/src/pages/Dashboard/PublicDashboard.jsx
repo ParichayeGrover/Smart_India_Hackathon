@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Layout/Navbar";
 import Sidebar from "../../components/Layout/Sidebar";
 
 export default function PublicDashboard() {
-  // Sample contamination data
-  const [data] = useState([
-    { id: 1, area: "Sector 12", status: "Contaminated", date: "2025-09-15" },
-    { id: 2, area: "Sector 8", status: "Safe", date: "2025-09-16" },
-    { id: 3, area: "Sector 5", status: "Contaminated", date: "2025-09-17" },
-  ]);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    // Fetch public water status data from backend
+    fetch("/api/public/water-status")
+      .then((res) => res.json())
+      .then((records) => setData(records))
+      .catch(() => setData([]));
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-slate-900 text-slate-100">

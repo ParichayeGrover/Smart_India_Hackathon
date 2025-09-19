@@ -1,44 +1,64 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Layout/Navbar";
 import Sidebar from "../../components/Layout/Sidebar";
 
 export default function WorkerDashboard() {
-  // Simulated assigned areas from Admin (in real app, fetch from backend)
-  const assignedAreas = ["Sector 12", "Sector 8", "Sector 21"];
 
-  // Contamination records (only for assigned areas)
-  const [data, setData] = useState([
-    { id: 1, area: "Sector 12", status: "Contaminated", date: "2025-09-15" },
-    { id: 2, area: "Sector 8", status: "Safe", date: "2025-09-16" },
-    { id: 3, area: "Sector 21", status: "Contaminated", date: "2025-09-17" },
-  ]);
-
+  const [assignedAreas, setAssignedAreas] = useState([]); // fetched from backend
+  const [data, setData] = useState([]); // contamination records
   const [newArea, setNewArea] = useState("");
   const [newStatus, setNewStatus] = useState("Safe");
   const [editingId, setEditingId] = useState(null);
 
+  useEffect(() => {
+    // Fetch assigned water bodies for this worker
+    fetch("/api/worker/water-bodies")
+      .then((res) => res.json())
+      .then((areas) => setAssignedAreas(areas))
+      .catch(() => setAssignedAreas([]));
+
+    // Fetch contamination records for assigned water bodies
+    fetch("/api/worker/water-quality")
+      .then((res) => res.json())
+      .then((records) => setData(records))
+      .catch(() => setData([]));
+  }, []);
+
   // Add or Update record
+
   const handleAddRecord = (e) => {
     e.preventDefault();
-    if (!newArea || !assignedAreas.includes(newArea)) return;
+    if (!newArea || !assignedAreas.find(a => a.name === newArea || a.id === newArea)) return;
 
     if (editingId) {
-      setData((prev) =>
-        prev.map((rec) =>
-          rec.id === editingId
-            ? { ...rec, area: newArea, status: newStatus, date: new Date().toISOString().split("T")[0] }
-            : rec
-        )
-      );
+      // Update record in backend
+      fetch(`/api/worker/water-quality/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area: newArea, status: newStatus }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          // Refresh data
+          fetch("/api/worker/water-quality")
+            .then((res) => res.json())
+            .then((records) => setData(records));
+        });
       setEditingId(null);
     } else {
-      const newRecord = {
-        id: data.length + 1,
-        area: newArea,
-        status: newStatus,
-        date: new Date().toISOString().split("T")[0],
-      };
-      setData([...data, newRecord]);
+      // Add new record in backend
+      fetch("/api/worker/water-quality", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area: newArea, status: newStatus }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          // Refresh data
+          fetch("/api/worker/water-quality")
+            .then((res) => res.json())
+            .then((records) => setData(records));
+        });
     }
 
     setNewArea("");
@@ -52,7 +72,14 @@ export default function WorkerDashboard() {
   };
 
   const handleDelete = (id) => {
-    setData(data.filter((rec) => rec.id !== id));
+    // Delete record in backend
+    fetch(`/api/worker/water-quality/${id}`, { method: "DELETE" })
+      .then(() => {
+        // Refresh data
+        fetch("/api/worker/water-quality")
+          .then((res) => res.json())
+          .then((records) => setData(records));
+      });
   };
 
   return (
@@ -126,8 +153,8 @@ export default function WorkerDashboard() {
             >
               <option value="">Select Assigned Area</option>
               {assignedAreas.map((area, idx) => (
-                <option key={idx} value={area}>
-                  {area}
+                <option key={area.id || idx} value={area.name || area.id}>
+                  {area.name || area}
                 </option>
               ))}
             </select>
