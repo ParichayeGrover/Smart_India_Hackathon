@@ -4,16 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginForm({ title, accent }) {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  // Hardcoded credentials
-  const credentials = {
-    admin: { username: "admin", password: "admin123", redirect: "/dashboard/admin" },
-    worker: { username: "worker", password: "worker123", redirect: "/dashboard/worker" },
-    public: { username: "public", password: "public123", redirect: "/dashboard/public" },
-  };
+  const [loading, setLoading] = useState(false);
 
   // Determine which role this form belongs to
   const role = title.toLowerCase().includes("admin")
@@ -22,16 +16,54 @@ export default function LoginForm({ title, accent }) {
     ? "worker"
     : "public";
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Define redirect paths for each role
+  const redirectPaths = {
+    admin: "/dashboard/admin",
+    worker: "/dashboard/worker",
+    public: "/dashboard/public",
+  };
 
-    if (
-      username === credentials[role].username &&
-      password === credentials[role].password
-    ) {
-      navigate(credentials[role].redirect);
-    } else {
-      setError("Invalid username or password");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // All authentication goes through the database
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Map database roles to frontend roles
+        const userRole = data.user.role === 'citizen' ? 'public' : data.user.role;
+        
+        // Verify the user has the correct role for this login form
+        if (userRole !== role) {
+          setError(`This account is not authorized for ${role} access. Please use the correct login page.`);
+          setLoading(false);
+          return;
+        }
+
+        // Store authentication data in localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userRole', userRole);
+        localStorage.setItem('userId', data.user.id);
+        
+        navigate(redirectPaths[role]);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Invalid email or password");
+      }
+    } catch (err) {
+      setError("Login failed. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,11 +78,12 @@ export default function LoginForm({ title, accent }) {
       <h2 className="text-2xl font-bold mb-6 text-slate-100">{title}</h2>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="px-4 py-2 rounded-lg bg-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          required
         />
         <input
           type="password"
@@ -58,13 +91,15 @@ export default function LoginForm({ title, accent }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="px-4 py-2 rounded-lg bg-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          required
         />
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <button
           type="submit"
-          className={`${accentColor[accent]} text-white py-2 rounded-lg shadow-md transition transform hover:scale-105`}
+          disabled={loading}
+          className={`${accentColor[accent]} disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 rounded-lg shadow-md transition transform hover:scale-105`}
         >
-          Login
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>

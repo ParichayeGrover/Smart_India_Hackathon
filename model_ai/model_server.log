@@ -1,0 +1,10 @@
+2025-09-20 04:53:57,174 - INFO -  Starting Water Quality ML Model Server...
+2025-09-20 04:53:57,175 - INFO -  Loading and preprocessing dataset...
+2025-09-20 04:53:57,217 - INFO -  Dataset loaded: 7999 rows, 22 columns
+2025-09-20 04:53:57,226 - INFO -  Features: ['aluminium', 'ammonia', 'arsenic', 'barium', 'cadmium', 'chloramine', 'chromium', 'copper', 'flouride', 'bacteria', 'viruses', 'lead', 'nitrates', 'nitrites', 'mercury', 'perchlorate', 'radium', 'selenium', 'silver', 'uranium']
+2025-09-20 04:53:57,229 - INFO -  Disease classes: ['nan' 'Diarrhoeal disease' 'Arsenicosis' 'Lead poisoning'
+ 'Mercury poisoning' 'Hepatitis A' 'Cadmium toxicity']
+2025-09-20 04:54:00,564 - INFO -    • Host: localhost (127.0.0.1)
+2025-09-20 04:54:00,565 - INFO -    • Port: 8000
+2025-09-20 04:54:00,565 - INFO -    • API Endpoint: http://localhost:8000/predict
+2025-09-20 04:54:00,566 - INFO -    • Documentation: http://localhost:8000/docs

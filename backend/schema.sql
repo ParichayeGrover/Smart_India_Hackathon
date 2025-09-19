@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS water_bodies (
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     role TEXT CHECK (role IN ('admin', 'worker', 'citizen')) NOT NULL,
     contact TEXT,
     assigned_village INTEGER REFERENCES villages(id), -- For admin and optionally for citizens
@@ -44,8 +45,25 @@ CREATE TABLE IF NOT EXISTS water_quality_reports (
     fluoride FLOAT,
     arsenic FLOAT,
     ecoli FLOAT,
-    tds FLOAT
-    -- Add more parameters as needed
+    tds FLOAT,
+    aluminium FLOAT,
+    ammonia FLOAT,
+    barium FLOAT,
+    cadmium FLOAT,
+    chloramine FLOAT,
+    chromium FLOAT,
+    copper FLOAT,
+    flouride FLOAT,
+    bacteria FLOAT,
+    viruses FLOAT,
+    lead FLOAT,
+    nitrites FLOAT,
+    mercury FLOAT,
+    perchlorate FLOAT,
+    radium FLOAT,
+    selenium FLOAT,
+    silver FLOAT,
+    uranium FLOAT
 );
 
 -- 4. Health Reports Table

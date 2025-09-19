@@ -15,6 +15,9 @@ export default function Home() {
         <Link to="/login/public" className="bg-slate-700 hover:bg-slate-600 text-white py-3 px-6 rounded-xl shadow-lg text-center transition transform hover:scale-105">
           Public Login
         </Link>
+        <Link to="/register/public" className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl shadow-lg text-center transition transform hover:scale-105">
+          Public Registration
+        </Link>
       </div>
     </div>
   );

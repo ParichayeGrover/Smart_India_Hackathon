@@ -7,6 +7,7 @@ import adminRoutes from "./routes/admin.js";
 import workerRoutes from "./routes/worker.js";
 import publicRoutes from "./routes/public.js";
 import sharedRoutes from "./routes/shared.js";
+import villagesRoutes from "./routes/villages.js";
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/worker", workerRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/villages", villagesRoutes);
 app.use("/api", sharedRoutes);
 
 // Root Route

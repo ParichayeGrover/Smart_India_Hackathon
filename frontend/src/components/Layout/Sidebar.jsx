@@ -1,60 +1,70 @@
 import React from "react";
-import { Users, Shield, Wrench, Globe, CheckCircle, Clock, ListTodo } from "lucide-react"; // icons
+import { Users, Shield, Wrench, Globe, CheckCircle, Clock, ListTodo, Droplets } from "lucide-react"; // icons
 
-export default function Sidebar({ role, data = [] }) {
-  // Hardcoded stats
-  const userStats = {
-    total: 120,
-    admin: 5,
-    worker: 35,
-    public: 80,
-  };
+export default function Sidebar({ role, data = [], stats = {} }) {
+  // Admin role: calculate stats from data
+  const adminStats = role === "admin" ? {
+    totalWaterBodies: data.length || 0,
+    safeWaterBodies: data.filter((d) => d.status === "Safe").length || 0,
+    contaminatedWaterBodies: data.filter((d) => d.status === "Contaminated").length || 0,
+    totalWorkers: stats.totalWorkers || 0,
+    ...stats
+  } : {};
 
-  const workerStats = {
-    assigned: 12,
-    completed: 8,
-    pending: 4,
-    shift: "Morning (9 AM - 5 PM)",
-  };
+  // Worker role: calculate stats from assigned water bodies
+  const workerStats = role === "worker" ? {
+    assignedTasks: data.length || 0,
+    completedTasks: data.filter((d) => d.status === "Safe").length || 0,
+    pendingTasks: data.filter((d) => d.status === "Contaminated" || !d.status).length || 0,
+    recentTests: data.filter((d) => {
+      const testDate = new Date(d.date || d.last_tested);
+      const today = new Date();
+      const daysDiff = (today - testDate) / (1000 * 60 * 60 * 24);
+      return daysDiff <= 7;
+    }).length || 0,
+    ...stats
+  } : {};
 
   // Public role: calculate contamination info
   const contaminatedCount = data.filter((d) => d.status === "Contaminated").length;
   const safeCount = data.filter((d) => d.status === "Safe").length;
-  const lastUpdate = data.length > 0 ? data[data.length - 1].date : "N/A";
+  const lastUpdate = data.length > 0 ? data[0].date : "N/A";
 
   return (
     <div className="w-64 bg-slate-800 p-6 flex flex-col shadow-xl">
-      <h1 className="text-xl font-bold mb-6 text-slate-100">Sidebar</h1>
+      <h1 className="text-xl font-bold mb-6 text-slate-100">
+        {role === "admin" ? "Admin Panel" : role === "worker" ? "Worker Panel" : "Public Info"}
+      </h1>
 
       {/* Admin Sidebar */}
       {role === "admin" && (
         <div className="space-y-4">
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
-            <Users className="text-emerald-400" />
+            <Droplets className="text-blue-400" />
             <div>
-              <p className="text-slate-300 text-sm">Total Users</p>
-              <p className="font-bold text-lg">{userStats.total}</p>
+              <p className="text-slate-300 text-sm">Total Water Bodies</p>
+              <p className="font-bold text-lg">{adminStats.totalWaterBodies}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
-            <Shield className="text-amber-400" />
+            <CheckCircle className="text-green-400" />
             <div>
-              <p className="text-slate-300 text-sm">Admins</p>
-              <p className="font-bold">{userStats.admin}</p>
+              <p className="text-slate-300 text-sm">Safe Sources</p>
+              <p className="font-bold">{adminStats.safeWaterBodies}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
-            <Wrench className="text-blue-400" />
+            <Shield className="text-red-400" />
             <div>
-              <p className="text-slate-300 text-sm">Workers</p>
-              <p className="font-bold">{userStats.worker}</p>
+              <p className="text-slate-300 text-sm">Contaminated</p>
+              <p className="font-bold">{adminStats.contaminatedWaterBodies}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
-            <Globe className="text-purple-400" />
+            <Wrench className="text-yellow-400" />
             <div>
-              <p className="text-slate-300 text-sm">Public</p>
-              <p className="font-bold">{userStats.public}</p>
+              <p className="text-slate-300 text-sm">Active Workers</p>
+              <p className="font-bold">{adminStats.totalWorkers}</p>
             </div>
           </div>
         </div>
@@ -66,29 +76,29 @@ export default function Sidebar({ role, data = [] }) {
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
             <ListTodo className="text-cyan-400" />
             <div>
-              <p className="text-slate-300 text-sm">Assigned Tasks</p>
-              <p className="font-bold text-lg">{workerStats.assigned}</p>
+              <p className="text-slate-300 text-sm">Assigned Areas</p>
+              <p className="font-bold text-lg">{workerStats.assignedTasks}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
             <CheckCircle className="text-green-400" />
             <div>
-              <p className="text-slate-300 text-sm">Completed</p>
-              <p className="font-bold">{workerStats.completed}</p>
+              <p className="text-slate-300 text-sm">Safe Areas</p>
+              <p className="font-bold">{workerStats.completedTasks}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
             <Clock className="text-red-400" />
             <div>
-              <p className="text-slate-300 text-sm">Pending</p>
-              <p className="font-bold">{workerStats.pending}</p>
+              <p className="text-slate-300 text-sm">Need Testing</p>
+              <p className="font-bold">{workerStats.pendingTasks}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-slate-700 p-3 rounded-lg">
-            <Wrench className="text-yellow-400" />
+            <Droplets className="text-blue-400" />
             <div>
-              <p className="text-slate-300 text-sm">Shift</p>
-              <p className="font-bold">{workerStats.shift}</p>
+              <p className="text-slate-300 text-sm">Recent Tests</p>
+              <p className="font-bold">{workerStats.recentTests}</p>
             </div>
           </div>
         </div>

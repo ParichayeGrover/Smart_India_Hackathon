@@ -4,6 +4,7 @@ import Home from "../pages/Home";
 import AdminLogin from "../pages/Login/AdminLogin";
 import WorkerLogin from "../pages/Login/WorkerLogin";
 import PublicLogin from "../pages/Login/PublicLogin";
+import PublicRegistration from "../pages/Auth/PublicRegistration";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 import WorkerDashboard from "../pages/Dashboard/WorkerDashboard";
 import PublicDashboard from "../pages/Dashboard/PublicDashboard";
@@ -16,6 +17,7 @@ export default function AppRoutes() {
       <Route path="/login/admin" element={<AdminLogin />} />
       <Route path="/login/worker" element={<WorkerLogin />} />
       <Route path="/login/public" element={<PublicLogin />} />
+      <Route path="/register/public" element={<PublicRegistration />} />
       <Route path="/dashboard/admin" element={<AdminDashboard />} />
       <Route path="/dashboard/worker" element={<WorkerDashboard />} />
       <Route path="/dashboard/public" element={<PublicDashboard />} />
