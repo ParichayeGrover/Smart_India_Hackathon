@@ -109,9 +109,11 @@ INSERT INTO users (name, email, role, password_hash, contact) VALUES
 ('System Administrator', 'admin@system.com', 'admin', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543210')
 ON CONFLICT (email) DO NOTHING;
 
-SET password_hash = '$2b$10$lJNrkFplMeyHILh29bK3e.eGR0SphLwOe3W6tI6FcJtR/Fnfu2SCG'
+UPDATE users SET password_hash = '$2b$10$lJNrkFplMeyHILh29bK3e.eGR0SphLwOe3W6tI6FcJtR/Fnfu2SCG'
 WHERE email = 'ramesh.worker@village.com';
 -- Smart Community Health Monitoring - Dummy Data Insert Script
+UPDATE users SET password_hash = '$2b$10$lJNrkFplMeyHILh29bK3e.eGR0SphLwOe3W6tI6FcJtR/Fnfu2SCG'
+WHERE email = 'arun.citizen@village.com';
 
 -- First, let's clear any existing data and start fresh
 DELETE FROM alerts;
